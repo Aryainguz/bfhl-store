@@ -12,7 +12,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  /login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => void;
 }
@@ -42,7 +42,7 @@ const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isAdmin: false,
       
-      /login: async (email: string, password: string) => {
+      login: async (email: string, password: string) => {
         // Simulate API request
         await new Promise((resolve) => setTimeout(resolve, 1000));
         

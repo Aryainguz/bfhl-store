@@ -168,7 +168,7 @@ export default function NavBar() {
                       variant="outline"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      /login
+                      login
                     </Button>
                   </Link>
                   <Link href="signup" className="w-1/2">
