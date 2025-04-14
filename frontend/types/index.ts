@@ -22,9 +22,12 @@ export interface Product {
     discount: number;
     stock: number;
     usage?: string; 
+    id: string;
+    rating: number;
   }
   
   export interface Category {
+    
     id: string;
     name: string;
     count: number;
