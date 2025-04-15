@@ -26,13 +26,13 @@ const useCartStore = create<CartState>()(
       
       addToCart: (product: Product) => {
         const { cartItems } = get();
-        const existingItem = cartItems.find((item) => item.id === product.id);
+        const existingItem = cartItems.find((item) => item._id === product._id);
         
         if (existingItem) {
           // If product already in cart, update quantity
           set({
             cartItems: cartItems.map((item) =>
-              item.id === product.id
+              item._id === product._id
                 ? { ...item, quantity: item.quantity + 1 }
                 : item
             ),
@@ -48,7 +48,7 @@ const useCartStore = create<CartState>()(
       removeFromCart: (productId: string) => {
         const { cartItems } = get();
         set({
-          cartItems: cartItems.filter((item) => item.id !== productId),
+          cartItems: cartItems.filter((item) => item._id !== productId),
         });
       },
       
@@ -56,7 +56,7 @@ const useCartStore = create<CartState>()(
         const { cartItems } = get();
         set({
           cartItems: cartItems.map((item) =>
-            item.id === productId ? { ...item, quantity } : item
+            item._id === productId ? { ...item, quantity } : item
           ),
         });
       },
@@ -104,7 +104,7 @@ export const useCart = () => {
   
   const removeFromCart = (productId: string) => {
     // Find the product name before removing it from cart
-    const item = cartStore.cartItems.find(item => item.id === productId);
+    const item = cartStore.cartItems.find(item => item._id === productId);
     const productName = item ? item.name : "Item";
     
     cartStore.removeFromCart(productId);

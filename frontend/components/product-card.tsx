@@ -14,7 +14,7 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, viewMode = "grid" }: ProductCardProps) {
   const { addToCart } = useCart();
-  const { id, name, description, price, imageUrl, category, rating, isNew, discount, stock } = product;
+  const { _id, name, description, price, imageUrl, category, rating, isNew, discount, stock } = product;
 
   const handleAddToCart = () => {
     addToCart(product);
@@ -68,7 +68,7 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
               </div>
             </div>
             <h3 className="font-semibold text-lg truncate">
-              <Link href={`/products/${id}`} className="hover:text-brand-600 transition-colors">
+              <Link href={`/products/${_id}`} className="hover:text-brand-600 transition-colors">
                 {name}
               </Link>
             </h3>
@@ -89,13 +89,11 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
                   )}
                 </div>
                 <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" className="text-brand-600">
-                    <Heart className="h-5 w-5" />
-                  </Button>
+                 
                   <Button 
                     onClick={handleAddToCart} 
                     disabled={stock <= 0}
-                    className="bg-brand-600 hover:bg-brand-700 text-white"
+                    className="bg-blue-500 hover:bg-blue-600 text-white"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     {stock <= 0 ? "Out of Stock" : "Add to Cart"}
@@ -111,7 +109,7 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
 
   return (
     <Card className="overflow-hidden hover:shadow-healthcare transition-all duration-300 h-full flex flex-col">
-      <Link href={`/products/${id}`} className="block overflow-hidden relative aspect-square">
+      <Link href={`/products/${_id}`} className="block overflow-hidden relative aspect-square">
         <img
           src={imageUrl}
           alt={name}
@@ -140,7 +138,7 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
         </div>
         
         <h3 className="font-semibold text-base mb-1 truncate">
-          <Link href={`/products/${id}`} className="hover:text-brand-600 transition-colors">
+          <Link href={`/products/${_id}`} className="hover:text-brand-600 transition-colors">
             {name}
           </Link>
         </h3>

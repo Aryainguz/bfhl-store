@@ -4,15 +4,44 @@ import NavBar from "@/components/navbar";
 import ProductCard from "@/components/product-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { featuredProducts, popularCategories } from "@/data/mock-data";
 import { ChevronRight, ShoppingBag } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useProductStore } from "@/hooks/useProductsStore";
+import { popularCategories } from "@/data/mock-data";
 
 export default function Index() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const { products, setProducts } = useProductStore();
+  
+  // Ensure that products is an array before slicing
+  const displayedProducts = Array.isArray(products) ? products.slice(0, 4) : [];
 
-  const displayedProducts = featuredProducts.slice(0, 4);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch products");
+        }
+
+        const data = await res.json();
+        console.log(data.data)
+        setProducts(data.data); // Update Zustand store with fetched products
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -35,7 +64,6 @@ export default function Index() {
                   and wellness solutions.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center gap-4 animate-fade-in delay-200">
-                  {/* Shop Healthcare Button */}
                   <Button
                     asChild
                     size="default"
@@ -80,9 +108,9 @@ export default function Index() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {popularCategories.map((category) => (
+              {popularCategories.map((category,index) => (
                 <Link
-                  key={category.id}
+                  key={index}
                   href={`/categories/${category.id}`}
                   className="bg-card hover:bg-accent transition-colors rounded-lg p-4 text-center group"
                 >
@@ -114,8 +142,8 @@ export default function Index() {
             </div>
 
             <div className="product-grid">
-              {displayedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {displayedProducts.map((product,index) => (
+                <ProductCard key={index} product={product} />
               ))}
             </div>
           </div>

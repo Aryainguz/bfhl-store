@@ -44,10 +44,10 @@ export default function NavBar() {
               <Link href="/products" className="nav-link font-medium">
                 Products
               </Link>
-              <Link href="/categories" className="nav-link font-medium">
+              <Link href="/products" className="nav-link font-medium">
                 Categories
               </Link>
-              <Link href="/about" className="nav-link font-medium">
+              <Link href="https://www.bajajfinservhealth.in" target="_blank" className="nav-link font-medium">
                 About
               </Link>
             </nav>
@@ -85,7 +85,7 @@ export default function NavBar() {
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/login">/login</Link>
+                  <Link href="/login">Login</Link>
                 </Button>
               )}
 
