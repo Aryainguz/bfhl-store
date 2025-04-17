@@ -24,7 +24,7 @@ export class ProductsService {
       const product = await created.save();
       return { success: true, data: product };
     } catch (error) {
-      console.log(error)
+      // console.log(error)
       return { success: false, error: 'Error creating product' };
     }
   }
