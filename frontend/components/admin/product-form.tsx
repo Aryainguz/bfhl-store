@@ -35,21 +35,18 @@ const productSchema = z.object({
   isNew: z.boolean(),
   discount: z.coerce.number().min(0).max(100),
   stock: z.coerce.number().int().nonnegative(),
-  usage: z.string().optional(),
 });
 
 type ProductFormProps = {
   product?: Product;
-  onSubmit: (data: ProductFormData) => void;
+  onSubmit: (data: any) => void;
   categories: any;
-  usageTypes?: string[];
 };
 
 export default function ProductForm({
   product,
   onSubmit,
   categories,
-  usageTypes = [],
 }: ProductFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -66,7 +63,6 @@ export default function ProductForm({
           isNew: product.isNew ?? false,
           discount: product.discount,
           stock: product.stock,
-          usage: product.usage,
         }
       : {
           name: "",
@@ -77,7 +73,6 @@ export default function ProductForm({
           isNew: false as boolean,
           discount: 0,
           stock: 0,
-          usage: "",
         },
   });
 
@@ -186,58 +181,30 @@ export default function ProductForm({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category: any) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((category:any) => (
+                      <SelectItem key={category.name} value={category.name}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+              
               )}
             />
 
-            {usageTypes.length > 0 && (
-              <FormField
-                control={form.control}
-                name="usage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Usage</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select usage type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {usageTypes.map((usage) => (
-                          <SelectItem key={usage} value={usage}>
-                            {usage}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
 
             <FormField
               control={form.control}
@@ -309,13 +276,13 @@ export default function ProductForm({
         </div>
 
         <div className="flex justify-end space-x-2">
-          <Button type="button" variant="outline">
+          <Button type="button" variant="outline" className="cursor-pointer">
             Cancel
           </Button>
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-blue-500 hover:bg-blue-600 cursor-pointer"
           >
             {isSubmitting
               ? "Saving..."

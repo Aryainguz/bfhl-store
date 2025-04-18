@@ -1,24 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Search, Filter, Edit, Trash2, Eye } from "lucide-react";
+import AdminLayout from "@/components/admin/admin-layout";
+import ProductForm from "@/components/admin/product-form";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -29,25 +23,35 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import AdminLayout from "@/components/admin/admin-layout";
-import ProductForm from "@/components/admin/product-form";
-import { allProducts, productCategories } from "@/data/mock-data";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { productCategories } from "@/data/mock-data";
+import { useToast } from "@/hooks/use-toast";
+import { useProductStore } from "@/hooks/useProductsStore";
 import { formatCurrency } from "@/lib/utils";
 import { Product } from "@/types";
-import { useToast } from "@/hooks/use-toast";
+import { Edit, Eye, Filter, Plus, Search, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function AdminProducts() {
   const { toast } = useToast();
-  const [products, setProducts] = useState<Product[]>(allProducts);
+  const products = useProductStore((state) => state.products);
+  const fetchProducts = useProductStore((state) => state.fetchProducts);
+  const updateProduct = useProductStore((state) => state.updateProduct);
+  const removeProduct = useProductStore((state) => state.removeProduct);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -56,71 +60,122 @@ export default function AdminProducts() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
   const filteredProducts = products.filter(
     (product) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase())
+      product?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product?.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product?.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Pagination
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const handleAddProduct = (data: Product) => {
-    // Generate ID for new product
-    const newProduct: Product = {
-      ...data,
-      id: `product-${products.length + 1}`,
-      rating: 0,
-    };
-
-    setProducts([...products, newProduct]);
-    setIsAddDialogOpen(false);
-
-    toast({
-      title: "Product Added",
-      description: `${data.name} has been added successfully.`,
-    });
-  };
-
-  const handleEditProduct = (data: Product) => {
-    if (!selectedProduct) return;
-
-    const updatedProducts = products.map((product) =>
-      product.id === selectedProduct.id ? { ...product, ...data } : product
-    );
-
-    setProducts(updatedProducts);
-    setIsEditDialogOpen(false);
-    setSelectedProduct(null);
-
-    toast({
-      title: "Product Updated",
-      description: `${data.name} has been updated successfully.`,
-    });
-  };
-
-  const handleDeleteProduct = (id: string) => {
-    const updatedProducts = products.filter((product) => product.id !== id);
-    setProducts(updatedProducts);
-
-    if (selectedRows.has(id)) {
-      const newSelectedRows = new Set(selectedRows);
-      newSelectedRows.delete(id);
-      setSelectedRows(newSelectedRows);
+  const handleAddProduct = async (data: Product) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+          credentials:"include"
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to create product");
+      }
+      const newProduct = await response.json();
+      console.log(newProduct)
+      useProductStore.setState((state) => ({
+        products: [...state.products, newProduct.data],
+      }));
+      setIsAddDialogOpen(false);
+      toast({
+        title: "Product Added",
+        description: `${newProduct.name} has been added successfully.`,
+      });
+    } catch (error) {
+      console.error("Error creating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add product. Please try again.",
+        variant: "error",
+      });
     }
-
-    toast({
-      title: "Product Deleted",
-      description: "The product has been deleted successfully.",
-    });
   };
 
-  // (Optional) These functions remain in the state if used elsewhere
+  const handleEditProduct = async (data: Product) => {
+    if (!selectedProduct) return;
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${selectedProduct._id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+          credentials:"include"
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to update product");
+      }
+      const updatedProduct = await response.json();
+      // console.log("updatedProduct",updatedProduct)
+      updateProduct(updatedProduct.data);
+      setIsEditDialogOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update product. Please try again.",
+        variant: "error",
+      });
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Failed to delete product");
+      }
+      removeProduct(id);
+      if (selectedRows.has(id)) {
+        const newSelectedRows = new Set(selectedRows);
+        newSelectedRows.delete(id);
+        setSelectedRows(newSelectedRows);
+      }
+      toast({
+        title: "Product Deleted",
+        description: "The product has been deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product. Please try again.",
+        variant: "error",
+      });
+    }
+  };
+
   const toggleSelectRow = (id: string) => {
     const newSelectedRows = new Set(selectedRows);
     if (selectedRows.has(id)) {
@@ -135,7 +190,7 @@ export default function AdminProducts() {
     if (selectedRows.size === paginatedProducts.length) {
       setSelectedRows(new Set());
     } else {
-      const newSelectedRows = new Set(paginatedProducts.map((p) => p.id));
+      const newSelectedRows = new Set(paginatedProducts.map((p) => p._id));
       setSelectedRows(newSelectedRows);
     }
   };
@@ -145,14 +200,14 @@ export default function AdminProducts() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Products Mangement</h1>
+            <h1 className="text-3xl font-bold">Products Management</h1>
             <p className="text-muted-foreground">Manage your product catalog</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2">
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button className="cursor-pointer">
                   <Plus className="mr-2 h-4 w-4" />
                   Add Product
                 </Button>
@@ -191,7 +246,7 @@ export default function AdminProducts() {
               setCurrentPage(1);
             }}
           >
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px] cursor-pointer">
               <span className="flex items-center">
                 <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="10 per page" />
@@ -210,7 +265,6 @@ export default function AdminProducts() {
           <Table>
             <TableHeader>
               <TableRow>
-                {/* Removed checkbox header column */}
                 <TableHead>Product</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead className="text-right">Price</TableHead>
@@ -227,9 +281,8 @@ export default function AdminProducts() {
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedProducts.map((product,index) => (
-                  <TableRow key={index}>
-                    {/* Removed checkbox cell */}
+                paginatedProducts.map((product) => (
+                  <TableRow key={product._id}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-md overflow-hidden bg-muted">
@@ -254,9 +307,7 @@ export default function AdminProducts() {
                     <TableCell className="text-right">{product.stock}</TableCell>
                     <TableCell className="text-center">
                       <Badge
-                        variant={
-                          product.stock > 0 ? "default" : "destructive"
-                        }
+                        variant={product.stock > 0 ? "default" : "destructive"}
                       >
                         {product.stock > 0 ? "In Stock" : "Out of Stock"}
                       </Badge>
@@ -265,18 +316,17 @@ export default function AdminProducts() {
                       <div className="flex justify-end gap-2">
                         <Button variant="ghost" size="icon" asChild>
                           <Link
-                            href={`/products/${product.id}`}
+                            href={`/products/${product._id}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
-
                         <Dialog
                           open={
                             isEditDialogOpen &&
-                            selectedProduct?.id === product.id
+                            selectedProduct?._id === product._id
                           }
                           onOpenChange={setIsEditDialogOpen}
                         >
@@ -285,6 +335,7 @@ export default function AdminProducts() {
                               variant="ghost"
                               size="icon"
                               onClick={() => setSelectedProduct(product)}
+                              className="cursor-pointer"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
@@ -305,11 +356,11 @@ export default function AdminProducts() {
                             )}
                           </DialogContent>
                         </Dialog>
-
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteProduct(product.id)}
+                          onClick={() => handleDeleteProduct(product._id)}
+                          className="cursor-pointer"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -337,7 +388,6 @@ export default function AdminProducts() {
 
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (page) => {
-                  // Show first, last, and pages around current page
                   if (
                     page === 1 ||
                     page === totalPages ||
@@ -359,11 +409,9 @@ export default function AdminProducts() {
                     );
                   }
 
-                  // Show ellipsis between non-consecutive pages
                   if (
                     (page === 2 && currentPage > 3) ||
-                    (page === totalPages - 1 &&
-                      currentPage < totalPages - 2)
+                    (page === totalPages - 1 && currentPage < totalPages - 2)
                   ) {
                     return (
                       <PaginationItem key={page}>
