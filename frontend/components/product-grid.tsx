@@ -64,8 +64,8 @@ export default function ProductGrid({ products }: ProductGridProps) {
       </div>
 
       <div className={viewMode === "grid" ? "product-grid" : "product-list"}>
-        {sortedProducts.map((product) => (
-          <ProductCard key={product.id} product={product} viewMode={viewMode} />
+        {sortedProducts.map((product,index) => (
+          <ProductCard key={index} product={product} viewMode={viewMode} />
         ))}
       </div>
     </div>

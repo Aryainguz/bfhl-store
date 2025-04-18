@@ -9,7 +9,6 @@ export interface Product {
     isNew?: boolean;
     discount: number;
     stock: number;
-    usage?: string; 
   }
   
   export interface ProductFormData {
@@ -21,7 +20,6 @@ export interface Product {
     isNew?: boolean;
     discount: number;
     stock: number;
-    usage?: string; 
     id: string;
     rating: number;
   }

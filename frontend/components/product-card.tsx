@@ -17,7 +17,7 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
   const { _id, name, description, price, imageUrl, category, rating, isNew, discount, stock } = product;
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart(product, 1); // Assuming quantity is 1 for simplicity
   };
 
   const discountedPrice = discount > 0 ? price * (1 - discount / 100) : price;
@@ -62,10 +62,10 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
                 {getCategoryIcon(category)}
                 {category}
               </Badge>
-              <div className="flex items-center text-amber-500 ml-auto">
+              {/* <div className="flex items-center text-amber-500 ml-auto">
                 <Star className="h-4 w-4 fill-current" />
                 <span className="ml-1 text-sm">{rating}</span>
-              </div>
+              </div> */}
             </div>
             <h3 className="font-semibold text-lg truncate">
               <Link href={`/products/${_id}`} className="hover:text-brand-600 transition-colors">
@@ -132,8 +132,14 @@ export default function ProductCard({ product, viewMode = "grid" }: ProductCardP
             {category}
           </Badge>
           <div className="flex items-center text-amber-500 ml-auto">
-            <Star className="h-3 w-3 fill-current" />
-            <span className="ml-1 text-xs">{rating}</span>
+            <span className="ml-1 text-xs">
+
+              {
+                product.isNew && (
+                  <span className="text-amber-500 font-bold">NEW</span>
+                ) 
+              }
+            </span>
           </div>
         </div>
         

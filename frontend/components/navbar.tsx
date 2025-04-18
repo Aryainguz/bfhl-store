@@ -2,11 +2,14 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Menu, ShoppingCart, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import CartDropdown from "./cart-dropdown";
 
@@ -15,7 +18,41 @@ export default function NavBar() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { cartItems } = useCart();
   const itemCount = cartItems.length;
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated, user,setUser,setAuthState } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error("Logout failed");
+      }
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.message || "Logout failed");
+      }
+
+      setUser(null);
+      setAuthState(false);
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out.",
+      });
+      router.push("/");
+    } catch (error: any) {
+      toast({
+        title: "Logout failed",
+        description: error.message || "An error occurred during logout",
+        variant: "error",
+      });
+    }
+  };
 
   return (
     <header className="bg-background sticky top-0 z-50 w-full border-b">
@@ -76,23 +113,36 @@ export default function NavBar() {
               </div>
 
               {isAuthenticated ? (
-                <Button variant="ghost" size="icon" asChild>
-                  <Link href="/profile">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>US</AvatarFallback>
-                    </Avatar>
-                  </Link>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <Avatar className="h-8 w-8">
+                        <AvatarFallback className="cursor-pointer">
+                          {user?.name
+                            ? user.name
+                                .split(' ')
+                                .map(n => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem disabled>{user?.email}</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">Logout</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/login">Login</Link>
-                </Button>
-              )}
-
-              {!isAuthenticated && (
-                <Button size="sm" asChild>
-                  <Link href="/signup">Sign Up</Link>
-                </Button>
+                <>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href="/auth/login">Login</Link>
+                  </Button>
+                  <Button size="sm" asChild>
+                    <Link href="/auth/signup">Sign Up</Link>
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -119,14 +169,6 @@ export default function NavBar() {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="space-y-1 px-4 pb-3 pt-2">
-            <div className="mb-4">
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="w-full"
-              />
-            </div>
-
             <Link
               href="/products"
               className="block px-3 py-2 text-base font-medium nav-link"
@@ -149,39 +191,40 @@ export default function NavBar() {
               About
             </Link>
 
-            <div className="pt-4 flex space-x-3">
-              {isAuthenticated ? (
-                <Link href="/profile" className="w-full">
-                  <Button
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    My Profile
-                  </Button>
+            {isAuthenticated ? (
+              <>
+                <div className="px-3 py-2 text-sm text-muted-foreground">
+                  Logged in as {user?.email}
+                </div>
+                <Button
+                  className="w-full cursor-pointer"
+                  variant="outline"
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="block px-3 py-2 text-base font-medium nav-link"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Login
                 </Link>
-              ) : (
-                <>
-                  <Link href="/login" className="w-1/2">
-                    <Button
-                      className="w-full"
-                      variant="outline"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      login
-                    </Button>
-                  </Link>
-                  <Link href="signup" className="w-1/2">
-                    <Button
-                      className="w-full"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign Up
-                    </Button>
-                  </Link>
-                </>
-              )}
-            </div>
+                <Link
+                  href="/auth/signup"
+                  className="block px-3 py-2 text-base font-medium nav-link"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
 
             <Link href="/cart" className="mt-4 block">
               <Button

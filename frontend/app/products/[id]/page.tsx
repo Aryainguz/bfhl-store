@@ -1,25 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import {
-  Heart,
-  ShoppingCart,
-  ArrowLeft,
-  Star,
-  Clock,
-  Check,
-  AlertCircle,
-} from "lucide-react";
+import Footer from "@/components/footer";
+import NavBar from "@/components/navbar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import NavBar from "@/components/navbar";
-import Footer from "@/components/footer";
 import { useCart } from "@/hooks/useCart";
 import { useProductStore } from "@/hooks/useProductsStore";
 import { formatCurrency, getStockStatus, getStockStatusColor } from "@/lib/utils";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Check,
+  Clock,
+  ShoppingCart
+} from "lucide-react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function ProductDetailPage() {
   const { id }:any = useParams();
@@ -151,16 +149,11 @@ export default function ProductDetailPage() {
               <h1 className="text-3xl font-display font-bold">{product.name}</h1>
               <div className="flex items-center mt-2">
                 <div className="flex items-center text-amber-500">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product.rating) ? "fill-current" : ""
-                      }`}
-                    />
-                  ))}
+                
                   <span className="ml-2 text-sm text-gray-600">
-                    {product.rating}
+                   {
+                    product.isNew ? "New Arrival" : "Best Seller"
+                   }
                   </span>
                 </div>
               </div>
@@ -218,7 +211,7 @@ export default function ProductDetailPage() {
                   </div>
                 </div>
                 <Button
-                  onClick={() => addToCart(product)}
+                  onClick={() => addToCart(product, quantity)}
                   disabled={product.stock === 0}
                   className="w-full sm:w-2/3 cursor-pointer bg-blue-500 hover:bg-blue-600 text-white"
                 >
@@ -233,9 +226,7 @@ export default function ProductDetailPage() {
                   <TabsTrigger value="details" className="flex-1">
                     Details
                   </TabsTrigger>
-                  <TabsTrigger value="usage" className="flex-1">
-                    Usage & Dosage
-                  </TabsTrigger>
+                  
                   <TabsTrigger value="shipping" className="flex-1">
                     Shipping
                   </TabsTrigger>
@@ -265,23 +256,6 @@ export default function ProductDetailPage() {
                         </h3>
                         <p>Store in a cool, dry place</p>
                       </div>
-                    </div>
-                  </div>
-                </TabsContent>
-                <TabsContent value="usage" className="mt-4">
-                  <div className="space-y-4">
-                    <p className="text-gray-700">
-                      For adult use only. Take as directed by your healthcare professional.
-                      Always read the product label before use and follow instructions carefully.
-                    </p>
-                    <div className="bg-blue-50 rounded-md p-4 border border-blue-100">
-                      <h4 className="font-medium text-brand-700 mb-2">
-                        Healthcare Professional Advice
-                      </h4>
-                      <p className="text-sm text-gray-700">
-                        Consult with your healthcare provider before starting any new supplement regimen,
-                        especially if you have existing health conditions or are taking other medications.
-                      </p>
                     </div>
                   </div>
                 </TabsContent>

@@ -32,8 +32,8 @@ export default function CartDropdown({ onClose }: CartDropdownProps) {
         ) : (
           <>
             <div className="max-h-64 overflow-y-auto space-y-3 my-2">
-              {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center space-x-3">
+              {cartItems.map((item,index) => (
+                <div key={index} className="flex items-center space-x-3">
                   <div className="h-12 w-12 overflow-hidden rounded-md bg-muted">
                     <img 
                       src={item.imageUrl} 
@@ -44,14 +44,16 @@ export default function CartDropdown({ onClose }: CartDropdownProps) {
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{item.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {item.quantity} x {formatCurrency(item.price)}
+                      {item.quantity} x {formatCurrency(  item.discount > 0
+      ? item.price * (1 - item.discount / 100)
+      : item.price)}
                     </p>
                   </div>
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     className="h-6 w-6"
-                    onClick={() => removeFromCart(item.id)}
+                    onClick={() => removeFromCart(item._id)}
                   >
                     <X className="h-3 w-3" />
                   </Button>

@@ -53,7 +53,7 @@ export default function Index() {
           <div className="container mx-auto px-4 relative z-10">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
               <div className="space-y-6">
-                <Badge className="bg-white/20 text-white border-none hover:bg-white/30 animate-fade-in">
+                <Badge className="bg-blue-500 text-white border-none animate-fade-in">
                   Healthcare Innovation 2025
                 </Badge>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight animate-fade-in">

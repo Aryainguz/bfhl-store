@@ -5,20 +5,18 @@ import {
   Heart,
   HeartPulse,
   Leaf,
-  Shield,
-  Tablet,
-  Thermometer,
+  Thermometer
 } from "lucide-react";
 
 export const productCategories = [
-  "Fitness Supplements",
-  "Wellness Essentials",
-  "Personal Care",
-  "Health & Wellness",
-  "Nutrition",
-  "Medical Devices",
-  "Vitamins",
-  "First Aid",
+{ name: "Fitness Supplements"},
+{ name:  "Wellness Essentials"},
+  { name:  "Personal Care"},
+    { name:   "Health & Wellness"},
+      { name:   "Nutrition"},
+        { name:  "Medical Devices"},
+          { name:   "Vitamins"},
+  { name:  "First Aid"}
 ];
 
 export const popularCategories: Category[] = [
@@ -61,7 +59,7 @@ export const popularCategories: Category[] = [
 ];
 
 const createProduct = (
-  id: string,
+  _id: string,
   name: string,
   description: string,
   price: number,
@@ -72,7 +70,7 @@ const createProduct = (
   discount: number = 0,
   stock: number = 10
 ): Product => ({
-  id,
+  _id,
   name,
   description,
   price,
