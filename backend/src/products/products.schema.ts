@@ -20,7 +20,7 @@ export class Product {
   @Prop({ required: true })
   category: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   rating: number;
 
   @Prop({ default: false })
@@ -31,9 +31,6 @@ export class Product {
 
   @Prop({ required: true })
   stock: number;
-
-  @Prop()
-  usage?: string;
 }
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

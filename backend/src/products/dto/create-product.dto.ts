@@ -21,9 +21,9 @@ export class CreateProductDto {
   @IsString()
   category?: string;
 
-  @IsOptional()
-  @IsNumber()
-  rating?: number;
+  // @IsOptional()
+  // @IsNumber()
+  // rating?: number;
 
   @IsOptional()
   @IsBoolean()
@@ -37,7 +37,7 @@ export class CreateProductDto {
   @IsNumber()
   stock?: number;
 
-  @IsOptional()
-  @IsString()
-  usage?: string;
+  // @IsOptional()
+  // @IsString()
+  // usage?: string;
 }
