@@ -1,4 +1,3 @@
-// src/orders/orders.controller.ts
 import {
   Controller,
   Post,
@@ -23,7 +22,7 @@ export class OrdersController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateOrderDto) {
-    const order: { _id: string } = await this.ordersService.create(dto);
+    const order = await this.ordersService.create(dto);
     return { success: true, orderId: order._id.toString() };
   }
 

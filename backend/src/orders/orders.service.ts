@@ -1,9 +1,8 @@
-// src/orders/orders.service.ts
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { Order, OrderDocument } from './schemas/order.schema';  // OrderDocument extends Document & Order
+import { Order, OrderDocument } from './schemas/order.schema';  
 import { CouponsService } from '../coupans/coupans.service';
 
 @Injectable()
@@ -35,15 +34,13 @@ export class OrdersService {
       paymentStatus: 'pending',
     });
 
-    return orderDoc.save(); // now orderDoc is OrderDocument
+    return orderDoc.save(); 
   }
 
-  /** Return array of OrderDocument */
   async findAll(): Promise<OrderDocument[]> {
     return this.orderModel.find().exec();
   }
 
-  /** Return single OrderDocument */
   async findOne(id: string): Promise<OrderDocument> {
     const order = await this.orderModel.findById(id).exec();
     if (!order) throw new NotFoundException(`Order ${id} not found`);

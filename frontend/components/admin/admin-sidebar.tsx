@@ -56,8 +56,8 @@ export default function AdminSidebar() {
           <SidebarLink href="/admin/orders" icon={Package}>
             Orders
           </SidebarLink>
-          <SidebarLink href="/" icon={Home}>
-            Home
+          <SidebarLink href="/admin/coupans" icon={Home}>
+            Coupans
           </SidebarLink>
         </nav>
       </div>
