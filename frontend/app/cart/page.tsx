@@ -32,6 +32,7 @@ export default function CartPage() {
         description: "Please log in to proceed to checkout.",
         variant: "error",
       });
+      router.push("/auth/login");
       return;
     }
     // Placeholder for checkout logic (e.g., redirect to checkout page or API call)

@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { formatCurrency } from "@/lib/utils";
-import { ArrowLeft, ShieldCheck, Truck } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -44,7 +44,7 @@ export default function CheckoutPage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 1) Coupon check
+  // coupon check
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
       return toast({ variant: "error", title: "Enter a coupon code" });
@@ -71,13 +71,16 @@ export default function CheckoutPage() {
         description: `You saved ${formatCurrency(data.discountAmount)}!`,
       });
     } catch (err: any) {
-      toast({ variant: "error", title: "Coupon Error", description: err.message });
+      toast({
+        variant: "error",
+        title: "Coupon Error",
+        description: err.message,
+      });
     } finally {
       setIsApplying(false);
     }
   };
 
-  // 2) Dummy payment & order creation
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -132,15 +135,32 @@ export default function CheckoutPage() {
       }
 
       clearCart();
-      toast({ title: "Payment Successful", description: "Your order has been placed." });
+      toast({
+        title: "Payment Successful",
+        description: "Your order has been placed.",
+      });
       alert("Payment successful! Your order has been placed.");
       router.push("/products");
     } catch (err: any) {
-      toast({ variant: "error", title: "Order Error", description: err.message });
+      toast({
+        variant: "error",
+        title: "Order Error",
+        description: err.message,
+      });
     } finally {
       setIsProcessing(false);
     }
   };
+
+  if (!isAuthenticated) {
+    toast({
+      variant: "error",
+      title: "Authentication Required",
+      description: "Please log in to proceed to checkout.",
+    });
+    router.push("/auth/login");
+    return;
+  }
 
   if (cartItems.length === 0) {
     return (
@@ -172,7 +192,9 @@ export default function CheckoutPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Personal & Address */}
               <div className="bg-white rounded-lg p-6 shadow-sm space-y-4">
-                <h2 className="text-xl font-bold">Personal & Address Details</h2>
+                <h2 className="text-xl font-bold">
+                  Personal & Address Details
+                </h2>
                 {[
                   { name: "fullName", label: "Full Name" },
                   { name: "email", label: "Email" },
@@ -212,7 +234,11 @@ export default function CheckoutPage() {
               {/* Payment */}
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <h2 className="text-xl font-bold mb-4">Payment</h2>
-                <Button type="submit" disabled={isProcessing} className="w-full">
+                <Button
+                  type="submit"
+                  disabled={isProcessing}
+                  className="w-full"
+                >
                   {isProcessing
                     ? "Processing…"
                     : `Complete Order • ${formatCurrency(totalAfterDiscount)}`}
@@ -272,17 +298,34 @@ function OrderSummary({
       </div>
       <Separator className="my-4" />
       <div className="space-y-2 text-sm">
-        <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(subtotal)}</span></div>
-        <div className="flex justify-between"><span>Shipping</span><span>{shipping === 0 ? "Free" : formatCurrency(shipping)}</span></div>
-        <div className="flex justify-between"><span>Estimated Tax</span><span>{formatCurrency(tax)}</span></div>
+        <div className="flex justify-between">
+          <span>Subtotal</span>
+          <span>{formatCurrency(subtotal)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Shipping</span>
+          <span>{shipping === 0 ? "Free" : formatCurrency(shipping)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Estimated Tax</span>
+          <span>{formatCurrency(tax)}</span>
+        </div>
         {discount > 0 && (
-          <div className="flex justify-between text-green-600"><span>Discount</span><span>-{formatCurrency(discount)}</span></div>
+          <div className="flex justify-between text-green-600">
+            <span>Discount</span>
+            <span>-{formatCurrency(discount)}</span>
+          </div>
         )}
       </div>
       <Separator className="my-4" />
-      <div className="flex justify-between font-bold text-lg"><span>Total</span><span>{formatCurrency(totalAfterDiscount)}</span></div>
+      <div className="flex justify-between font-bold text-lg">
+        <span>Total</span>
+        <span>{formatCurrency(totalAfterDiscount)}</span>
+      </div>
       <div className="mt-6 space-y-3 text-sm text-gray-600">
-        <div className="flex items-center"><ShieldCheck className="mr-2 text-green-600" /> Secure checkout</div>
+        <div className="flex items-center">
+          <ShieldCheck className="mr-2 text-green-600" /> Secure checkout
+        </div>
       </div>
     </div>
   );
