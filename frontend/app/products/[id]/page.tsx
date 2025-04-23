@@ -40,9 +40,9 @@ export default function ProductDetailPage() {
       try {
 
        // if products is empty, fetch products
-        if (products.length === 0) {
+        // if (products.length === 0) {
           await fetchProducts();
-        }
+        // }
         
         // First, check in store
         const found = products.find((p) => p._id === id);
