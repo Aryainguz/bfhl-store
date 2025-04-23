@@ -105,6 +105,7 @@ export default function CouponFormDialog({
                   <FormControl>
                     <Input
                       type="number"
+                      required
                       {...field}
                       onChange={(e) => field.onChange(parseFloat(e.target.value))}
                     />
@@ -163,6 +164,7 @@ export default function CouponFormDialog({
                   <FormControl>
                     <Input
                       type="number"
+                      required
                       {...field}
                       onChange={(e) =>
                         field.onChange(
@@ -186,6 +188,7 @@ export default function CouponFormDialog({
                   <FormControl>
                     <Input
                       type="number"
+                      required
                       {...field}
                       onChange={(e) =>
                         field.onChange(

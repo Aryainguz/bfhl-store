@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import AdminLayout from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,29 +24,26 @@ interface Order {
   items: { productId: string; quantity: number; price: number }[];
   amount: number;
   currency: string;
-  shippingAddress: any
+  shippingAddress: { email: string };
 }
 
 export default function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filtered, setFiltered] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchEmail, setSearchEmail] = useState("");
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  // 1) Load orders from API
+  // Fetch orders from API
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/orders`,
-          { credentials: "include" }
-        );
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+          credentials: "include",
+        });
         if (!res.ok) throw new Error("Failed to fetch orders");
         const data: Order[] = await res.json();
         setOrders(data);
-        setFiltered(data);
       } catch (err: any) {
         toast({ variant: "error", title: "Error", description: err.message });
       } finally {
@@ -56,28 +53,36 @@ export default function AdminOrders() {
     fetchOrders();
   }, [toast]);
 
-  // 2) Search by email
+  // Memoized filtered orders
+  const filteredOrders = useMemo(() => {
+    if (!searchEmail.trim()) return orders;
+    return orders.filter((order) =>
+      order.shippingAddress.email
+        .toLowerCase()
+        .includes(searchEmail.toLowerCase())
+    );
+  }, [orders, searchEmail]);
+
   const handleSearch = () => {
     if (!searchEmail.trim()) {
-      setFiltered(orders);
-    } else {
-      const f = orders.filter((o) =>
-        o.email.toLowerCase().includes(searchEmail.toLowerCase())
-      );
-      setFiltered(f);
+      toast({
+        title: "Please enter an email address",
+        description: "You must enter an email address to search for orders.",
+      });
+      return;
     }
+
     toast({
-      title: `${filtered.length} Orders Found`,
+      title: `${filteredOrders.length} Orders Found`,
       description:
-        filtered.length > 0
-          ? `Found ${filtered.length} orders for "${searchEmail}"`
+        filteredOrders.length > 0
+          ? `Found ${filteredOrders.length} orders for "${searchEmail}"`
           : `No orders found for "${searchEmail}"`,
     });
   };
 
   const clearSearch = () => {
     setSearchEmail("");
-    setFiltered(orders);
   };
 
   return (
@@ -133,8 +138,8 @@ export default function AdminOrders() {
                         Loading orders...
                       </TableCell>
                     </TableRow>
-                  ) : filtered.length > 0 ? (
-                    filtered.map((o) => (
+                  ) : filteredOrders.length > 0 ? (
+                    filteredOrders.map((o) => (
                       <TableRow key={o._id}>
                         <TableCell className="font-medium text-blue-500">
                           <Link href={`/admin/orders/${o._id}`}>
