@@ -89,7 +89,7 @@ export default function RegisterPage() {
       });
 
       router.push(
-        `/auth/verify-otp`
+        `/auth/verify`
       );
     } catch (error: any) {
       toast({

@@ -100,7 +100,7 @@ export default function Index() {
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-2xl font-bold">Popular Categories</h2>
               <Link
-                href="/categories"
+                href="/products"
                 className="text-primary flex items-center hover:underline"
               >
                 View All <ChevronRight className="h-4 w-4 ml-1" />
@@ -111,7 +111,7 @@ export default function Index() {
               {popularCategories.map((category,index) => (
                 <Link
                   key={index}
-                  href={`/categories/${category.id}`}
+                  href={`/products`}
                   className="bg-card hover:bg-accent transition-colors rounded-lg p-4 text-center group"
                 >
                   <div className="h-16 w-16 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-3">

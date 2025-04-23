@@ -1,5 +1,7 @@
 "use client";
-import { useState } from "react";
+
+import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import AdminLayout from "@/components/admin/admin-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,88 +17,77 @@ import {
 import { Search, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// Mock orders data
-const mockOrders = [
-  {
-    id: "ORD-001",
-    email: "user@example.com",
-    date: "2025-03-12",
-    items: 3,
-    total: 154.99,
-  },
-  {
-    id: "ORD-002",
-    email: "jane@healthcare.org",
-    date: "2025-03-14",
-    items: 2,
-    total: 89.5,
-  },
-  {
-    id: "ORD-003",
-    email: "doctor@hospital.med",
-    date: "2025-03-15",
-    items: 5,
-    total: 245.75,
-  },
-  {
-    id: "ORD-004",
-    email: "user@example.com",
-    date: "2025-03-16",
-    items: 1,
-    total: 49.99,
-  },
-  {
-    id: "ORD-005",
-    email: "nurse@clinic.health",
-    date: "2025-03-18",
-    items: 4,
-    total: 178.25,
-  },
-];
-
 interface Order {
-  id: string;
+  _id: string;
   email: string;
-  date: string;
-  status: string;
-  items: number;
-  total: number;
+  createdAt: string;
+  items: { productId: string; quantity: number; price: number }[];
+  amount: number;
+  currency: string;
+  shippingAddress: { email: string };
 }
 
 export default function AdminOrders() {
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchEmail, setSearchEmail] = useState("");
-  const [filteredOrders, setFilteredOrders] = useState<any>(mockOrders);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  // Fetch orders from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+          credentials: "include",
+        });
+        if (!res.ok) throw new Error("Failed to fetch orders");
+        const data: Order[] = await res.json();
+        setOrders(data);
+      } catch (err: any) {
+        toast({ variant: "error", title: "Error", description: err.message });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, [toast]);
+
+  // Memoized filtered orders
+  const filteredOrders = useMemo(() => {
+    if (!searchEmail.trim()) return orders;
+    return orders.filter((order) =>
+      order.shippingAddress.email
+        .toLowerCase()
+        .includes(searchEmail.toLowerCase())
+    );
+  }, [orders, searchEmail]);
 
   const handleSearch = () => {
     if (!searchEmail.trim()) {
-      setFilteredOrders(mockOrders);
+      toast({
+        title: "Please enter an email address",
+        description: "You must enter an email address to search for orders.",
+      });
       return;
     }
 
-    const filtered = mockOrders.filter((order) =>
-      order.email.toLowerCase().includes(searchEmail.toLowerCase())
-    );
-
-    setFilteredOrders(filtered);
-
     toast({
-      title: `${filtered.length} Orders Found`,
+      title: `${filteredOrders.length} Orders Found`,
       description:
-        filtered.length > 0
-          ? `Found ${filtered.length} orders for ${searchEmail}`
-          : `No orders found for ${searchEmail}`,
+        filteredOrders.length > 0
+          ? `Found ${filteredOrders.length} orders for "${searchEmail}"`
+          : `No orders found for "${searchEmail}"`,
     });
   };
 
   const clearSearch = () => {
     setSearchEmail("");
-    setFilteredOrders(mockOrders);
   };
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-8">
         <div>
           <h1 className="text-3xl font-bold">Order Management</h1>
           <p className="text-muted-foreground">
@@ -117,9 +108,7 @@ export default function AdminOrders() {
                   value={searchEmail}
                   onChange={(e) => setSearchEmail(e.target.value)}
                   className="pl-10"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleSearch();
-                  }}
+                  onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 />
               </div>
               <Button onClick={handleSearch} className="gap-2">
@@ -131,7 +120,7 @@ export default function AdminOrders() {
               </Button>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -143,24 +132,33 @@ export default function AdminOrders() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredOrders.length > 0 ? (
-                    filteredOrders.map((order: any) => (
-                      <TableRow key={order.id}>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-8">
+                        Loading orders...
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredOrders.length > 0 ? (
+                    filteredOrders.map((o) => (
+                      <TableRow key={o._id}>
                         <TableCell className="font-medium text-blue-500">
-                          {order.id}
+                          <Link href={`/admin/orders/${o._id}`}>
+                            {o._id}
+                          </Link>
                         </TableCell>
-                        <TableCell>{order.email}</TableCell>
-                        <TableCell>{order.date}</TableCell>
-
-                        <TableCell>{order.items}</TableCell>
-                        <TableCell className="text-right text-green-500">
-                          ${order.total.toFixed(2)}
+                        <TableCell>{o.shippingAddress.email}</TableCell>
+                        <TableCell>
+                          {new Date(o.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>{o.items.length}</TableCell>
+                        <TableCell className="text-right text-green-600">
+                          {o.currency} {o.amount.toFixed(2)}
                         </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center">
+                      <TableCell colSpan={5} className="text-center py-8">
                         No orders found.
                       </TableCell>
                     </TableRow>

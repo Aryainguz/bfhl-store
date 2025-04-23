@@ -212,7 +212,9 @@ export default function AdminProducts() {
                   Add Product
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[700px]">
+              <DialogContent className="sm:max-w-[700px]"
+              onPointerDownOutside={(e) => e.preventDefault()}
+              >
                 <DialogHeader>
                   <DialogTitle>Add Product</DialogTitle>
                   <DialogDescription>
@@ -340,7 +342,9 @@ export default function AdminProducts() {
                               <Edit className="h-4 w-4" />
                             </Button>
                           </DialogTrigger>
-                          <DialogContent className="sm:max-w-[700px]">
+                          <DialogContent className="sm:max-w-[700px]"
+                          onPointerDownOutside={(e) => e.preventDefault()}
+                          >
                             <DialogHeader>
                               <DialogTitle>Edit Product</DialogTitle>
                               <DialogDescription>
